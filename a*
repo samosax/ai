@@ -1,11 +1,3 @@
-# EXP3: 8 Puzzle problem using heuristic search
-# Name: Pratiksha Jain
-
-# * 8 puzzle is a game where we have to arrange 8 title in a sequence (1,2,3,4,5,6,7,8,blank_tite) fitted in 3*3 matrix
-# * Initially title may not be in sequence so we have to check where is blank tile, and we can swap blank tile with its adjacent tile
-# * After swapping is done we check have we reached our goal state if yes game end, else we continue swapping tiles
-# * We can define H(Heuristic value) like=Number of tile in correct place,this will keep track of how far we are away from our goal(h=8)
-
 class Node:
     def __init__(self, data, level, fval):
         # Initialize the node with the data ,level of the node and the calculated fvalue

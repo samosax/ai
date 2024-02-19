@@ -111,3 +111,99 @@ class Puzzle:
 
 puz = Puzzle(3)
 puz.process()
+
+
+//maze
+from queue import PriorityQueue
+
+def heuristic_cost(coord, end_loc):
+    # A simple Manhattan distance heuristic
+    return abs(coord[0] - end_loc[0]) + abs(coord[1] - end_loc[1])
+
+def solveMazeAStar(maze):
+    R, C = len(maze), len(maze[0])
+
+    start = (0, 0)
+    for r in range(R):
+        for c in range(C):
+            if maze[r][c] == 'S':
+                start = (r, c)
+                break
+        else:
+            continue
+        break
+    else:
+        return None
+
+    end = (0, 0)
+    for r in range(R):
+        for c in range(C):
+            if maze[r][c] == 'E':
+                end = (r, c)
+                break
+        else:
+            continue
+        break
+    else:
+        return None
+
+    priority_queue = PriorityQueue()
+    priority_queue.put((0, start))
+    directions = [[0, 1], [0, -1], [1, 0], [-1, 0]]
+    visited = [[False] * C for _ in range(R)]
+    path = [[None] * C for _ in range(R)]
+
+    while not priority_queue.empty():
+        _, coord = priority_queue.get()
+        visited[coord[0]][coord[1]] = True
+
+        if coord == end:
+            # Reconstruct the path
+            path_coords = []
+            while coord:
+                path_coords.append((coord[0], coord[1]))
+                coord = path[coord[0]][coord[1]]
+            path_coords.reverse()
+            return path_coords
+
+        for dir in directions:
+            nr, nc = coord[0] + dir[0], coord[1] + dir[1]
+            if (nr < 0 or nr >= R or nc < 0 or nc >= C or maze[nr][nc] == "#" or visited[nr][nc]):
+                continue
+            cost_to_neighbor = heuristic_cost(coord, end) + 1
+            priority_queue.put((cost_to_neighbor, (nr, nc)))
+            visited[nr][nc] = True
+            path[nr][nc] = (coord[0], coord[1])
+
+    return None
+
+def print_maze_with_path(maze, path_coords):
+    for r in range(len(maze)):
+        for c in range(len(maze[0])):
+            if (r, c) in path_coords:
+                print("*", end=" ")  # Print path as '*'
+            else:
+                print(maze[r][c], end=" ")
+        print()
+
+if __name__ == '__main__':
+    # Get input for the maze
+    maze_input = []
+    print("Enter the maze rows. Press Enter without input to finish.")
+    while True:
+        row_input = input().strip()
+        if not row_input:
+            break
+        maze_input.append(list(row_input))
+
+    # Call the solveMazeAStar function with the input maze
+    path_coords = solveMazeAStar(maze_input)
+
+    # Display the result
+    if path_coords is not None:
+        print("Path coordinates:", path_coords)
+        print("\nMaze with Path:")
+        print_maze_with_path(maze_input, path_coords)
+    else:
+        print("No starting point 'S' or ending point 'E' found in the maze.")
+

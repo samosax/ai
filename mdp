@@ -50,3 +50,112 @@ mdp = MarkovDecisionProcess(num_states, num_actions, transition_probabilities, r
 optimal_values, optimal_policy = mdp.value_iteration()
 print("Optimal values:", optimal_values)
 print("Optimal policy:", optimal_policy)
+
+
+import numpy as np
+
+class MarkovDecisionProcess:
+    def _init_(self, states, actions, transition_probabilities, rewards, discount_factor=0.9, theta=1e-6):
+        """
+        Initialize the Markov Decision Process.
+
+        :param states: list of states
+        :param actions: list of actions
+        :param transition_probabilities: dictionary where keys are tuples (state, action) and values are dictionaries
+                                          of {next_state: probability}
+        :param rewards: dictionary where keys are tuples (state, action, next_state) and values are immediate rewards
+        :param discount_factor: discount factor for future rewards
+        :param theta: convergence threshold
+        """
+        self.states = states
+        self.actions = actions
+        self.transition_probabilities = transition_probabilities
+        self.rewards = rewards
+        self.discount_factor = discount_factor
+        self.theta = theta
+
+        self.values = {s: 0 for s in states}
+
+    def value_iteration(self):
+        """
+        Perform value iteration to find the optimal value function and policy.
+        """
+        while True:
+            delta = 0
+            for state in self.states:
+                v = self.values[state]
+                max_value = float('-inf')
+                for action in self.actions:
+                    action_value = 0
+                    for next_state, probability in self.transition_probabilities.get((state, action), {}).items():
+                        reward = self.rewards.get((state, action, next_state), 0)
+                        action_value += probability * (reward + self.discount_factor * self.values[next_state])
+                    max_value = max(max_value, action_value)
+                self.values[state] = max_value
+                delta = max(delta, abs(v - self.values[state]))
+            if delta < self.theta:
+                break
+
+    def get_optimal_policy(self):
+        """
+        Get the optimal policy given the computed value function.
+        """
+        policy = {}
+        for state in self.states:
+            max_value = float('-inf')
+            best_action = None
+            for action in self.actions:
+                action_value = 0
+                for next_state, probability in self.transition_probabilities.get((state, action), {}).items():
+                    reward = self.rewards.get((state, action, next_state), 0)
+                    action_value += probability * (reward + self.discount_factor * self.values[next_state])
+                if action_value > max_value:
+                    max_value = action_value
+                    best_action = action
+            policy[state] = best_action
+        return policy
+
+# Example Usage
+if _name_ == "_main_":
+    # Define states, actions, transition probabilities, and rewards
+    states = [1, 2, 3]
+    actions = ['a', 'b']
+    transition_probabilities = {
+        (1, 'a'): {1: 0.2, 2: 0.8},
+        (1, 'b'): {1: 0.5, 3: 0.5},
+        (2, 'a'): {1: 0.3, 2: 0.6, 3: 0.1},
+        (2, 'b'): {2: 0.9, 3: 0.1},
+        (3, 'a'): {1: 0.2, 3: 0.8},
+        (3, 'b'): {3: 1.0}
+    }
+    rewards = {
+        (1, 'a', 1): 5,
+        (1, 'a', 2): 2,
+        (1, 'b', 1): -1,
+        (1, 'b', 3): 0,
+        (2, 'a', 1): -2,
+        (2, 'a', 2): 10,
+        (2, 'a', 3): -1,
+        (2, 'b', 2): 0,
+        (2, 'b', 3): 5,
+        (3, 'a', 1): 1,
+        (3, 'a', 3): -1,
+        (3, 'b', 3): 0
+    }
+
+    # Create the MDP object
+    mdp = MarkovDecisionProcess(states, actions, transition_probabilities, rewards)
+
+    # Run value iteration
+    mdp.value_iteration()
+
+    # Get the optimal policy
+    optimal_policy = mdp.get_optimal_policy()
+    print("Optimal Policy:")
+    for state, action in optimal_policy.items():
+        print(f"State {state}: Action {action}")
+
+    # Print the computed values
+    print("\nOptimal Values:")
+    for state, value in mdp.values.items():
+        print(f"State {state}: Value {value}")

@@ -78,3 +78,135 @@ probability = hmm.predict_sequence_probability(observation_sequence)
 state_sequence = hmm.predict_state_sequence(observation_sequence)
 print("Probability of observing sequence {} is {:.4f}".format(observation_sequence, probability))
 print("Most likely state sequence:", state_sequence)
+
+
+
+import numpy as np
+
+def forward_algorithm(observation_sequence, start_prob, transition_prob, emission_prob):
+    n_states = start_prob.shape[0]
+    n_obs = len(observation_sequence)
+    
+    # Initialize forward probabilities
+    forward_probs = np.zeros((n_obs, n_states))
+    forward_probs[0] = start_prob * emission_prob[:, observation_sequence[0]]
+    
+    # Iterate over observations
+    for t in range(1, n_obs):
+        for j in range(n_states):
+            forward_probs[t, j] = np.sum(forward_probs[t - 1] * transition_prob[:, j]) * emission_prob[j, observation_sequence[t]]
+    
+    # Compute likelihood of observation sequence
+    likelihood = np.sum(forward_probs[-1])
+    
+    return likelihood, forward_probs
+
+def viterbi_algorithm(observation_sequence, start_prob, transition_prob, emission_prob):
+    n_states = start_prob.shape[0]
+    n_obs = len(observation_sequence)
+    
+    # Initialize Viterbi probabilities and backpointers
+    viterbi_probs = np.zeros((n_obs, n_states))
+    backpointers = np.zeros((n_obs - 1, n_states), dtype=int)
+    
+    # Initialize first step
+    viterbi_probs[0] = start_prob * emission_prob[:, observation_sequence[0]]
+    
+    # Iterate over observations
+    for t in range(1, n_obs):
+        for j in range(n_states):
+            # Compute maximum probability for current state
+            prev_probs = viterbi_probs[t - 1] * transition_prob[:, j]
+            max_prob_index = np.argmax(prev_probs)
+            viterbi_probs[t, j] = prev_probs[max_prob_index] * emission_prob[j, observation_sequence[t]]
+            backpointers[t - 1, j] = max_prob_index
+    
+    # Backtrack to find the most likely state sequence
+    state_sequence = [np.argmax(viterbi_probs[-1])]
+    for t in range(n_obs - 2, -1, -1):
+        state_sequence.insert(0, backpointers[t, state_sequence[0]])
+    
+    return state_sequence, viterbi_probs
+
+#Define input observation sequence and HMM parameters
+observation_sequence = [0, 1, 2, 3]  #Example observation sequence
+start_prob = np.array([0.5, 0.5])  #Initial state probabilities
+transition_prob = np.array([[0.7, 0.3], [0.4, 0.6]])  #Transition probabilities
+emission_prob = np.array([[0.3, 0.3, 0.2, 0.2], [0.2, 0.2, 0.3, 0.3]])  #Emission probabilities
+
+# Run forward algorithm
+likelihood, forward_probs = forward_algorithm(observation_sequence, start_prob, transition_prob, emission_prob)
+
+# Run Viterbi algorithm
+state_sequence, viterbi_probs = viterbi_algorithm(observation_sequence, start_prob, transition_prob, emission_prob)
+
+print("Likelihood of observation sequence:", likelihood)
+print("Forward probabilities:\n", forward_probs)
+print("Most likely state sequence:", state_sequence)
+
+
+import numpy as np
+
+def forward_algorithm(observation_sequence, start_prob, transition_prob, emission_prob):
+    n_states = start_prob.shape[0]
+    n_obs = len(observation_sequence)
+    
+    # Initialize forward probabilities
+    forward_probs = np.zeros((n_obs, n_states))
+    forward_probs[0] = start_prob * emission_prob[:, observation_sequence[0]]
+    
+    # Iterate over observations
+    for t in range(1, n_obs):
+        for j in range(n_states):
+            forward_probs[t, j] = np.sum(forward_probs[t - 1] * transition_prob[:, j]) * emission_prob[j, observation_sequence[t]]
+    
+    # Compute likelihood of observation sequence
+    likelihood = np.sum(forward_probs[-1])
+    
+    return likelihood, forward_probs
+
+def viterbi_algorithm(observation_sequence, start_prob, transition_prob, emission_prob):
+    n_states = start_prob.shape[0]
+    n_obs = len(observation_sequence)
+    
+    # Initialize Viterbi probabilities and backpointers
+    viterbi_probs = np.zeros((n_obs, n_states))
+    backpointers = np.zeros((n_obs - 1, n_states), dtype=int)
+    
+    # Initialize first step
+    viterbi_probs[0] = start_prob * emission_prob[:, observation_sequence[0]]
+    
+    # Iterate over observations
+    for t in range(1, n_obs):
+        for j in range(n_states):
+            # Compute maximum probability for current state
+            prev_probs = viterbi_probs[t - 1] * transition_prob[:, j]
+            max_prob_index = np.argmax(prev_probs)
+            viterbi_probs[t, j] = prev_probs[max_prob_index] * emission_prob[j, observation_sequence[t]]
+            backpointers[t - 1, j] = max_prob_index
+    
+    # Backtrack to find the most likely state sequence
+    state_sequence = [np.argmax(viterbi_probs[-1])]
+    for t in range(n_obs - 2, -1, -1):
+        state_sequence.insert(0, backpointers[t, state_sequence[0]])
+    
+    return state_sequence, viterbi_probs
+
+# Define input observation sequence and HMM parameters
+observation_sequence = "GGCACTGAA"  # Example observation sequence
+symbol_to_index = {'A': 0, 'T': 3, 'G': 2, 'C': 1}
+observation_indices = [symbol_to_index[s] for s in observation_sequence]
+
+start_prob = np.array([0.5, 0.5])  # Initial state probabilities
+transition_prob = np.array([[0.5, 0.5], [0.4, 0.6]])  # Transition probabilities
+emission_prob = np.array([[0.2, 0.3, 0.3, 0.2], [0.3, 0.2, 0.2, 0.3]])  # Emission probabilities
+
+# Run forward algorithm
+likelihood, forward_probs = forward_algorithm(observation_indices, start_prob, transition_prob, emission_prob)
+
+# Run Viterbi algorithm
+state_sequence, viterbi_probs = viterbi_algorithm(observation_indices, start_prob, transition_prob, emission_prob)
+
+print("Likelihood of observation sequence:", likelihood)
+print("Forward probabilities:\n", forward_probs)
+print("Most likely state sequence:", state_sequence)
